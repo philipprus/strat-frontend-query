@@ -1,5 +1,4 @@
-import React, { useContext } from "react";
-import { GlobalContext } from "../../context/GlobalState";
+import React from "react";
 import AddJobForm from "../AddJobForm/AddJobForm";
 import JobList from "../JobList/JobList";
 import ActionBar from "../shared-ui/ActionBar/ActionBar";
@@ -13,12 +12,6 @@ const ModalForm = () => (
 );
 
 const Queue = ({ jobs }: { jobs: JobType[] }) => {
-  const { isLoading } = useContext(GlobalContext);
-
-  if (isLoading) {
-    return <div>Loading</div>;
-  }
-
   const countJobs = jobs.length;
   return (
     <div className="app-manager-jobs-right  col">

@@ -1,45 +1,72 @@
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Col, Container, Row } from "reactstrap";
 import { getJobsApiMethod } from "./utils/fetchServicies";
-import { GlobalContext } from "./context/GlobalState";
 import Printer from "./components/Printer/Printer";
 import Queue from "./components/Queue/Queue";
 import ActionBar from "./components/shared-ui/ActionBar/ActionBar";
+import { useQuery } from "react-query";
+import { JobType, StatusJob } from "./components/shared-ui/Job/Job";
 
 function App() {
-  const { getJobs, fetching, jobs } = useContext(GlobalContext);
+  const [intervalMs, setIntervalMs] = React.useState<number>(5000);
 
-  const processJob = jobs && jobs[0];
-
-  const waitJobs = jobs && jobs.slice(1, jobs.length);
-
-  const fetchJobs = useCallback(async () => {
-    try {
-      fetching && fetching();
-      const { data } = await getJobsApiMethod();
-      getJobs && getJobs(data);
-    } catch (error) {
-      console.log(error);
+  const { data: jobs, isLoading, isFetching } = useQuery<JobType[]>(
+    "jobs",
+    getJobsApiMethod,
+    {
+      refetchInterval: intervalMs,
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  );
 
   useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
+    if (jobs?.length && jobs[0].status === StatusJob.Printing) {
+      setIntervalMs(30000);
+    } else {
+      setIntervalMs(5000);
+    }
+  }, [jobs]);
+
+  const processJob = jobs?.filter(
+    (job) =>
+      job.status === StatusJob.Printing || job.status === StatusJob.Stopped
+  )?.[0];
+
+  const waitJobs = jobs?.filter((job) => job.status !== StatusJob.Printing);
 
   return (
     <Container fluid="md" className="app-manager-jobs">
       <Row>
+        {isLoading && "Loading"}
         <Col xs="12" md="6">
           {processJob ? (
-            <Printer job={processJob} />
+            <Printer
+              job={processJob}
+              onEnd={() => {
+                setIntervalMs(1000);
+              }}
+            />
           ) : (
-            <ActionBar title="Printer waiting job" />
+            <ActionBar
+              title={`Printer waiting job`}
+              extra={
+                <span
+                  style={{
+                    display: "inline-block",
+                    marginLeft: ".5rem",
+                    width: 10,
+                    height: 10,
+                    background: isFetching ? "green" : "transparent",
+                    transition: !isFetching ? "all .3s ease" : "none",
+                    borderRadius: "100%",
+                    transform: "scale(2)",
+                  }}
+                />
+              }
+            />
           )}
         </Col>
         <Col xs="12" md="6">
-          <Queue jobs={waitJobs} />
+          {waitJobs && <Queue jobs={waitJobs} />}
         </Col>
       </Row>
     </Container>

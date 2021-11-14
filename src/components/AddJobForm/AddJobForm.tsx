@@ -1,11 +1,9 @@
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import React, { useContext } from "react";
+import React from "react";
+import { useMutation } from "react-query";
 import { Button, Col, Row, Spinner } from "reactstrap";
-import { GlobalContext } from "../../context/GlobalState";
-import {
-  createJobApiMethod,
-  getJobsApiMethod,
-} from "../../utils/fetchServicies";
+import { queryClient } from "../../context/query";
+import { createJobApiMethod } from "../../utils/fetchServicies";
 
 interface Values {
   name: string;
@@ -18,7 +16,12 @@ interface Errors {
 }
 
 const AddJobForm = () => {
-  const { getJobs } = useContext(GlobalContext);
+  const mutation = useMutation((job: Values) => createJobApiMethod(job), {
+    retry: 3,
+    onSuccess: () => {
+      queryClient.fetchQuery("jobs");
+    },
+  });
 
   const validate = (values: Values) => {
     const errors: Partial<Errors> = {};
@@ -41,14 +44,12 @@ const AddJobForm = () => {
         duration: 5,
       }}
       validate={validate}
-      onSubmit={async ({ name, duration }: Values) => {
+      onSubmit={(values, actions) => {
+        const { name, duration } = values;
         try {
-          const {  status,  } = await createJobApiMethod({ name, duration });
-          console.log(status);
-          if (status === 200) {
-            const { data } = await getJobsApiMethod();
-            getJobs && getJobs(data);
-          }
+          mutation.mutate({ name, duration });
+          actions.setSubmitting(false);
+          actions.resetForm();
         } catch (error) {
           console.log(error);
         }

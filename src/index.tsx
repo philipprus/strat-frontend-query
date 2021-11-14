@@ -3,12 +3,14 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { GlobalProvider } from "./context/GlobalState";
+import { QueryClientProvider } from "react-query";
+import { queryClient } from "./context/query";
 
+ 
 ReactDOM.render(
-  <GlobalProvider>
+  <QueryClientProvider client={queryClient}>
     <App />
-  </GlobalProvider>,
+  </QueryClientProvider>,
   document.getElementById("root")
 );
 

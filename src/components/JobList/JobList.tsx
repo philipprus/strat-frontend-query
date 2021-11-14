@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
-import { GlobalContext } from "../../context/GlobalState";
+import React from "react";
+import { useMutation } from "react-query";
+import { queryClient } from "../../context/query";
 import {
   deleteJobApiMethod,
   moveJobApiMethod,
@@ -7,12 +8,30 @@ import {
 import Job, { JobType } from "../shared-ui/Job/Job";
 
 const JobList = ({ jobs }: { jobs: JobType[] }) => {
-  const { getJobs, deleteJob } = useContext(GlobalContext);
+  const deleteMutation = useMutation(
+    (name: string) => deleteJobApiMethod(name),
+    {
+      retry: 3,
+      onSuccess: () => {
+        queryClient.fetchQuery("jobs");
+      },
+    }
+  );
+
+  const moveMutation = useMutation(
+    ({ name, up }: { name: string; up: boolean }) =>
+      moveJobApiMethod({ name, up }),
+    {
+      retry: 3,
+      onSuccess: () => {
+        queryClient.fetchQuery("jobs");
+      },
+    }
+  );
 
   const onMoveHandler = async (up: boolean, name: string) => {
     try {
-      const { data } = await moveJobApiMethod({ name, up });
-      getJobs && getJobs(data);
+       moveMutation.mutate({name, up});
     } catch (error) {
       console.log(error);
     }
@@ -20,8 +39,7 @@ const JobList = ({ jobs }: { jobs: JobType[] }) => {
 
   const onDeleteHandler = async (name: string) => {
     try {
-      await deleteJobApiMethod(name);
-      deleteJob && deleteJob(name);
+      deleteMutation.mutate(name);
     } catch (error) {
       console.log(error);
     }

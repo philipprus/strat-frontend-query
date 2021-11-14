@@ -5,8 +5,7 @@ export const getJobsApiMethod = async () => {
   const response = await sendRequest(`${BASE_PATH}/jobs/`, {
     method: "GET",
   });
-  const data = await response.json();
-  return { data };
+  return await response.json();
 };
 
 export const createJobApiMethod = async ({
@@ -16,10 +15,9 @@ export const createJobApiMethod = async ({
   name: string;
   duration: number;
 }) => {
-  const response = await sendRequest(`${BASE_PATH}/jobs/`, {
+  sendRequest(`${BASE_PATH}/jobs/`, {
     body: JSON.stringify({ name, duration }),
   });
-  return { data: await response.json(), status: response.status };
 };
 
 export const deleteJobApiMethod = (name: string) =>
