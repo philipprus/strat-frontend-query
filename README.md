@@ -18,9 +18,9 @@ React application bootstrapped with [Create React App](https://github.com/facebo
 ├── README.md
 └── src/
     ├── assetc/        => images
-    ├── context/        => represents reducer
-    ├── components/        => all react components
-    └── utils/    => global constants and helper functions
+    ├── context/       => represents react-query
+    ├── components/    => all react components
+    └── utils/         => global constants and helper functions
 ```
 
 # Getting Started with Create React App
@@ -61,7 +61,13 @@ First" development pattern as well as an easy to use component browsers for
 developers, project managers and customers.
 
 See the [Storybook README](./storybook/README.md) for more information.
- 
+
+## React-Query
+
+We use reqct-query for performant and powerful data synchronization for React.
+
+[More...](https://react-query.tanstack.com/)
+
 ## Code Style
 
 We use [TypeScript](https://www.typescriptlang.org/),
