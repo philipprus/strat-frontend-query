@@ -36,7 +36,6 @@ function App() {
   return (
     <Container fluid="md" className="app-manager-jobs">
       <Row>
-        {isLoading && "Loading"}
         <Col xs="12" md="6">
           {processJob ? (
             <Printer
