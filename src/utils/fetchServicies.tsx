@@ -32,19 +32,10 @@ export const moveJobApiMethod = async ({
   name: string;
   up: boolean;
 }) => {
-  const response = await sendRequest(
-    `${BASE_PATH}/job/move?name=${name}&up=${up}`,
-    {
-      headers: {
-        Accept: "application/json",
-      },
-    }
-  );
+  return sendRequest(`${BASE_PATH}/job/move/?name=${name}&up=${up}`);
 
-  return { data: await response.json() };
+  // return { data: await response.json() };
 };
 
 export const cancelJobApiMethod = (name: string) =>
-  sendRequest(`${BASE_PATH}/job/cancel?name=${name}`, {
-    headers: { Accept: "application/json" },
-  });
+  sendRequest(`${BASE_PATH}/job/cancel/?name=${name}`);

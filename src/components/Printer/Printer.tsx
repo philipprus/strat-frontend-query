@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "reactstrap";
 import ActionBar from "../shared-ui/ActionBar/ActionBar";
 import Icon from "../shared-ui/Icon/Icon";
 import { JobType, StatusJob } from "../shared-ui/Job/Job";
 import { formatSeconds } from "../../utils/helpers";
-import { cancelJobApiMethod } from "../../utils/fetchServicies";
+import {
+  cancelJobApiMethod,
+  getJobsApiMethod,
+} from "../../utils/fetchServicies";
 import SingleJob from "../shared-ui/SingleJob/SingleJob";
 import PrinterStatus from "../shared-ui/PrinterStatus/PrinterStatus";
 import { queryClient } from "../../context/query";
@@ -16,14 +19,19 @@ const Printer = ({
   job: JobType | null;
   onEnd?: () => void;
 }) => {
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(job?.duration || 0);
+  const [intervalId, setIntervalId] = useState(0);
 
   useEffect(() => {
-    job?.duration && setSeconds(job?.duration);
-  }, [job]);
+    if (job?.status === StatusJob.Printing) {
+      job?.duration && setSeconds(job?.duration);
+    } else {
+      intervalId && window.clearInterval(intervalId);
+    }
+  }, [job, intervalId]);
 
-  useEffect(() => {
-    let interval: number | null = null;
+  const startTimer = useCallback(() => {
+    let interval: number;
     interval = window.setInterval(() => {
       setSeconds((seconds) => seconds - 1);
       if (seconds === 0) {
@@ -31,10 +39,18 @@ const Printer = ({
         queryClient.refetchQueries("jobs");
       }
     }, 1000);
+    setIntervalId(interval as number);
+    return interval;
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const interval = startTimer();
+    setIntervalId(interval);
     return () => {
       window.clearInterval(interval as number);
     };
-  }, [seconds, onEnd]);
+  }, [seconds, onEnd, startTimer]);
 
   const getTimeEndProcent = () => {
     if (seconds <= 0) {
@@ -47,7 +63,12 @@ const Printer = ({
 
   const onHandlerCancelPrinting = async () => {
     try {
-      job?.name && (await cancelJobApiMethod(job?.name));
+      if (job?.name) {
+        const response = await cancelJobApiMethod(job?.name);
+        if (response.status) {
+          queryClient.refetchQueries("jobs");
+        }
+      }
     } catch (error) {}
   };
 
@@ -65,12 +86,16 @@ const Printer = ({
       <ActionBar
         title={<ActionTitleBar />}
         extra={
-          <Button
-            onClick={onHandlerCancelPrinting}
-            className="btn-icon btn-pause"
-          >
-            <Icon icon="pause" width={13} height={14} />
-          </Button>
+          job?.status !== StatusJob.Stopped ? (
+            <Button
+              onClick={onHandlerCancelPrinting}
+              className="btn-icon btn-pause"
+            >
+              <Icon icon="pause" width={13} height={14} />
+            </Button>
+          ) : (
+            "Stop"
+          )
         }
         progressValue={getTimeEndProcent()}
       />

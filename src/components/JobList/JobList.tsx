@@ -22,7 +22,7 @@ const JobList = ({ jobs }: { jobs: JobType[] }) => {
     ({ name, up }: { name: string; up: boolean }) =>
       moveJobApiMethod({ name, up }),
     {
-      retry: 3,
+      retry: 1,
       onSuccess: () => {
         queryClient.fetchQuery("jobs");
       },

@@ -3,7 +3,7 @@ import { Progress } from "reactstrap";
 
 export type ActionBarProps = {
   title: JSX.Element | string;
-  extra?: JSX.Element;
+  extra?: JSX.Element | string;
   progressValue?: number;
 };
 const ActionBar = ({ title, extra, progressValue }: ActionBarProps) => {

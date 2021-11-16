@@ -27,7 +27,6 @@ const Job = ({
   name,
   index,
   duration,
-  status,
   disableUpButton = true,
   disableDownButton = true,
   onMoveHandler,

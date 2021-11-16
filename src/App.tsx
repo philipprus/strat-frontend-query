@@ -10,7 +10,7 @@ import { JobType, StatusJob } from "./components/shared-ui/Job/Job";
 function App() {
   const [intervalMs, setIntervalMs] = React.useState<number>(5000);
 
-  const { data: jobs, isLoading, isFetching } = useQuery<JobType[]>(
+  const { data: jobs, isFetching } = useQuery<JobType[]>(
     "jobs",
     getJobsApiMethod,
     {
@@ -31,7 +31,7 @@ function App() {
       job.status === StatusJob.Printing || job.status === StatusJob.Stopped
   )?.[0];
 
-  const waitJobs = jobs?.filter((job) => job.status !== StatusJob.Printing);
+  const waitJobs = jobs?.filter((job) => job.status === StatusJob.Queued);
 
   return (
     <Container fluid="md" className="app-manager-jobs">
