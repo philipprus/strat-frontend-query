@@ -33,8 +33,6 @@ export const moveJobApiMethod = async ({
   up: boolean;
 }) => {
   return sendRequest(`${BASE_PATH}/job/move/?name=${name}&up=${up}`);
-
-  // return { data: await response.json() };
 };
 
 export const cancelJobApiMethod = (name: string) =>
